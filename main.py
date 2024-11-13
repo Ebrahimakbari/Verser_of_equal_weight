@@ -2,9 +2,12 @@ import re
 from collections import Counter
 from typing import List, Tuple, Dict
 
+
+
 VOWELS = set("اوي")
 CONSONANTS = set("بتثجحخدذرزسشصضطظعغفقكلمنه")
 ARABIC_DIACRITICS = re.compile(r'[\u064B-\u0652]')
+
 
 def load_quran_verses(filename: str) -> List[str]:
     """
@@ -20,6 +23,7 @@ def load_quran_verses(filename: str) -> List[str]:
         verses = [verse.strip() for verse in file.readlines() if verse.startswith('12|')]
     return verses
 
+
 def extract_diacritics(text: str) -> List[str]:
     """
     استخراج الگوی حرکات عربی از متن.
@@ -31,6 +35,7 @@ def extract_diacritics(text: str) -> List[str]:
     List[str]: لیست کدهای یونی‌کد حرکات عربی
     """
     return ARABIC_DIACRITICS.findall(text)
+
 
 def count_vowels_and_consonants(text: str) -> Tuple[int, int]:
     """
@@ -46,6 +51,7 @@ def count_vowels_and_consonants(text: str) -> Tuple[int, int]:
     consonant_count = sum(1 for char in text if char in CONSONANTS)
     return vowel_count, consonant_count
 
+
 def get_word_counts(verses: List[str]) -> List[int]:
     """
     محاسبه تعداد کلمات در هر آیه.
@@ -57,6 +63,7 @@ def get_word_counts(verses: List[str]) -> List[int]:
     List[int]: لیست تعداد کلمات در هر آیه
     """
     return [len(verse.split('|')[2].split()) for verse in verses]
+
 
 def find_similar_weight_verses_by_groups(verses: List[str]) -> Dict[str, List[str]]:
     """
@@ -87,7 +94,6 @@ def find_similar_weight_verses_by_groups(verses: List[str]) -> Dict[str, List[st
 
         vowel_cons_counts = [count_vowels_and_consonants(v.split('|')[2]) for v in group_verses]
         diacritic_patterns = [extract_diacritics(v.split('|')[2]) for v in group_verses]
-
         valid_verses = []
         for i, verse in enumerate(group_verses):
             verse_text = verse.split('|')[2]
@@ -99,25 +105,23 @@ def find_similar_weight_verses_by_groups(verses: List[str]) -> Dict[str, List[st
                 and verse_diacritic_pattern in diacritic_patterns
             ):
                 valid_verses.append(verse)
-
         if count == baseline_count:
             grouped_verses["majority"].extend(valid_verses)
         else:
             grouped_verses["other"][count] = valid_verses
-
     return grouped_verses
+
 
 if __name__ == "__main__":
     filename = 'quran.txt'
     output_filename = 'similar_weight_verses_yusuf.txt'
     surah_yusuf = load_quran_verses(filename)
     grouped_verses = find_similar_weight_verses_by_groups(surah_yusuf)
-
     with open(output_filename, 'w', encoding='utf-8') as output_file:
         output_file.write("مجموعه آیات اکثریت:\n")
         for verse in grouped_verses["majority"]:
             output_file.write(verse + '\n')
-        
+
         for count, verses in grouped_verses["other"].items():
             if len(verses) >= 2:
                 output_file.write(f"\nمجموعه آیات با تعداد کلمات برابر {count}:\n")
